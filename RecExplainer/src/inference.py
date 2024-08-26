@@ -35,7 +35,7 @@ from arguments import parse_args
 from dataset.infer_dataset import InferDataset4Exp
 from dataset.data_collator import ExpCollator
 from models.LLM4Exp import LLM4Exp
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import LoraConfig, TaskType, get_peft_model, PeftModel
 
 logger = get_logger(__name__)
 
@@ -123,7 +123,8 @@ def main():
     if args.use_lora:
         peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, 
                                     lora_dropout=0.1, fan_in_fan_out=False, modules_to_save=["lm_head", "embed_tokens"]) #["lm_head", "wte"])
-        model.llm_model = get_peft_model(model.llm_model, peft_config)
+        model.llm_model = PeftModel.from_pretrained(args.llm_model_name_or_path, config=peft_config)
+        # model.llm_model = get_peft_model(model.llm_model, peft_config)
         logger.info(f"model.llm_model: {model.llm_model.print_trainable_parameters()}")
 
     if args.llm_model_ckpt_path!=None and args.task_type!="none":
