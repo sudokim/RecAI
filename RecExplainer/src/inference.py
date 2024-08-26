@@ -123,7 +123,7 @@ def main():
     if args.use_lora:
         peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, 
                                     lora_dropout=0.1, fan_in_fan_out=False, modules_to_save=["lm_head", "embed_tokens"]) #["lm_head", "wte"])
-        model.llm_model = PeftModel.from_pretrained(args.llm_model_name_or_path, config=peft_config)
+        model.llm_model = PeftModel.from_pretrained(model, args.llm_model_name_or_path, config=peft_config)
         # model.llm_model = get_peft_model(model.llm_model, peft_config)
         logger.info(f"model.llm_model: {model.llm_model.print_trainable_parameters()}")
 
@@ -132,7 +132,7 @@ def main():
         state_dict = torch.load(args.llm_model_ckpt_path, map_location="cpu")
         model.load_state_dict(state_dict)
 
-    model = model.half()
+    model = model.bfloat16()
     # logger.info(f"model mixed precision: {model.llm_model.base_model.model.base_model.layers[0].self_attn.k_proj.weight.dtype}")
     # logger.info(f"model mixed precision: {model.item_connector[0].weight.dtype}")
     # logger.info(f"model mixed precision: {model.rec_model.item_embedding.weight.dtype}")
